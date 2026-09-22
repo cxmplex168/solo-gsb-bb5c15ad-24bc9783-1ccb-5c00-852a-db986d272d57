@@ -1,0 +1,24 @@
+services:
+  supplychain-api:
+    build: .
+    image: supplychain-attestation-api:latest
+    container_name: supplychain-attestation-api
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_PATH: /data/supplychain.db
+      # 可选:首次启动时预置一个受信根签发者(已存在则忽略)
+      BOOTSTRAP_TRUSTED_ROOT_ID: ""
+      BOOTSTRAP_TRUSTED_ROOT_PUBLIC_KEY: ""
+    volumes:
+      - sc-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/healthz').status==200 else 1)"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+volumes:
+  sc-data:
